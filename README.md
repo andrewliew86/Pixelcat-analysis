@@ -22,7 +22,7 @@ Ever wondered what colors make up your cat's fur? This fun project uses image pr
 4. Watch the magic happen and discover your cat's color palette!
 
 ## Example Input
-<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/bg-removed/image_1.png" width=25% height=25%>
+<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/bg-removed/image_1.png" width=70% height=70%>
 Photo of my Mochi my cat
 
 ## Example Output
