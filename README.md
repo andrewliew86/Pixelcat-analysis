@@ -29,8 +29,3 @@ Photo of my Mochi my cat
 <img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/3d-rgb-plot-example.png" width=70% height=70%>
 <img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/donut_output.png" width=70% height=70%>
 K-Means cluster plot of pixel and rough percentage quantification of color percentages
-
-
-
-
-Meow! 🐾
