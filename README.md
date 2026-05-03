@@ -21,11 +21,16 @@ Ever wondered what colors make up your cat's fur? This fun project uses image pr
 3. Adjust `num_colors` parameter for more/less color clusters
 4. Watch the magic happen and discover your cat's color palette!
 
+## Example Input
+<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/bg-removed/image_1.png" width=25% height=25%>
+Photo of my Mochi my cat
+
 ## Example Output
-```
-🎨 Color RGB(45, 34, 28) (#2d221c) → 45.67%
-🎨 Color RGB(128, 95, 72) (#805f48) → 32.14%
-🎨 Color RGB(200, 180, 150) (#c8b496) → 22.19%
-```
+<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/3d-rgb-plot-example.png" width=70% height=70%>
+<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/donut_output.png" width=70% height=70%>
+K-Means cluster plot of pixel and rough percentage quantification of color percentages
+
+
+
 
 Meow! 🐾
