@@ -18,6 +18,7 @@ Ever wondered what colors make up your cat's fur? This fun project uses image pr
 ## Usage
 
 ### Notebook
+1. Git clone repository
 1. Place your cat images in `images/bg-removed/` (or `images/plus-bg/` for images with background)
 2. Open and run `image_quantification.ipynb` in Jupyter
 3. Adjust `num_colors` parameter for more/less color clusters
@@ -41,11 +42,9 @@ Then open http://localhost:8501, upload an image, and pick the number of color c
 
 > **Note on backgrounds:** for best results, upload an image with the background already removed (e.g. a transparent-background PNG). If the uploaded image has no alpha channel, the app falls back to a simple heuristic that treats near-white pixels (R, G, B all > 200) as background and ignores them. This works for cats photographed against a clean white backdrop but will misclassify white fur or busy/dark backgrounds — pre-remove the background for anything else.
 
-## Example Input
-<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/bg-removed/image_1.png" width=70% height=70%>
-Photo of Mochi my cat
 
-## Example Output
-<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/3d-rgb-plot-example.png" width=70% height=70%>
+## Example output from streamlit app
 <img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/donut_output.png" width=70% height=70%>
+Simple streamlit app showing input image, quantitative output (donut plot)  
+<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/3d-rgb-plot-example.png" width=70% height=70%>
 K-Means cluster plot of pixel and rough percentage quantification of color percentages
