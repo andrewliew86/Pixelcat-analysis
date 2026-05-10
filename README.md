@@ -1,9 +1,10 @@
 <div align='center'>
 
-<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/pixel_cat_logo.png" width=35% height=35%>
+<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/pixel_cat_logo.png" width=60% height=60%>
+
+</div>
 
 # 🎨 Cat Color Quantifier 🐱
-</div>
 
 Ever wondered what colors make up your cat's fur? This fun project uses image processing and machine learning to analyze cat images and extract dominant colors! Purr-fect for cat lovers and data enthusiasts alike.
 
