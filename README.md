@@ -1,4 +1,9 @@
-# Cat Color Quantifier 🐱🎨
+<div align='center'>
+
+![Pixelcat Logo](https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/pixel_cat_logo.png?raw=true)
+
+# 🎨 Cat Color Quantifier 🐱
+</div>
 
 Ever wondered what colors make up your cat's fur? This fun project uses image processing and machine learning to analyze cat images and extract dominant colors! Purr-fect for cat lovers and data enthusiasts alike.
 
