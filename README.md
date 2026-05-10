@@ -1,6 +1,6 @@
 <div align='center'>
 
-![Pixelcat Logo](https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/pixel_cat_logo.png?raw=true)
+<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/pixel_cat_logo.png" width=35% height=35%>
 
 # 🎨 Cat Color Quantifier 🐱
 </div>
