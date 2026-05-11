@@ -4,7 +4,7 @@
 
 </div>
 
-# 🎨 Cat Color Quantifier 🐱
+# 🎨 Cat Color Quantifier
 
 Ever wondered what colors make up your cat's fur? This fun project uses image processing and machine learning to analyze cat images and extract dominant colors! Purr-fect for cat lovers and data enthusiasts alike.
 
