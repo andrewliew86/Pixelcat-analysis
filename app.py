@@ -294,16 +294,19 @@ def feature_note(description, calculation, instructions, interpretation=None):
 
 def render_single_analysis(num_colors, method):
     feature_note(
-        "Finds the main fur colors in one uploaded cat image.",
+        "Finds the main colors in your cat's fur.",
         (
-            f"The app keeps foreground pixels, samples up to {MAX_CLUSTER_PIXELS:,} of "
-            "them for speed, clusters RGB values with the selected method, then reports "
-            "each cluster as a percentage of sampled foreground color."
+            "It looks at the visible cat pixels and groups similar colors together. "
+            "For speed, it uses a sample of the image rather than every single pixel."
         ),
-        "Upload a cat image, ideally with a transparent or simple background.",
         (
-            "Larger percentages are more dominant colors. The RGB plot shows a sampled "
-            "view of how separated or blended the color clusters are."
+            "Upload a cat image that has already been cropped or segmented so the "
+            "background is transparent. A clean white background can also work, but "
+            "busy backgrounds will confuse the results."
+        ),
+        (
+            "Bigger percentages mean that color appears more often in the cat's fur. "
+            "The color chart is a quick summary of the fur palette."
         ),
     )
 
@@ -344,16 +347,18 @@ def render_single_analysis(num_colors, method):
 
 def render_cat_comparison(num_colors, method):
     feature_note(
-        "Compares the dominant-color palette of one reference cat against other cats.",
+        "Compares one cat's fur palette with other cats.",
         (
-            "For each reference color, the app finds the nearest comparison color in RGB "
-            "space, weights that distance by the reference color percentage, and averages "
-            "the result in both directions."
+            "It compares the main fur colors from each image and checks how close those "
+            "palettes are to one another."
         ),
-        "Upload one reference cat, then upload one or more cats to compare against it.",
         (
-            "Lower color distance means the palettes are closer. Higher similarity means "
-            "the comparison cat is more color-similar to the reference cat."
+            "Upload one reference cat, then upload one or more cats to compare. Use "
+            "segmented or transparent-background cat images for the fairest comparison."
+        ),
+        (
+            "Higher similarity means the cats have more similar fur colors. Lower color "
+            "distance means the palettes are closer."
         ),
     )
 
@@ -396,16 +401,18 @@ def render_cat_comparison(num_colors, method):
 
 def render_jacket_matcher(num_colors, method):
     feature_note(
-        "Estimates how visible cat fur may be on a jacket.",
+        "Estimates how much your cat's fur might show up on a jacket.",
         (
-            "The app compares the cat palette and jacket palette using the same weighted "
-            "RGB distance as cat comparison, then scales that mismatch to a 0-100 risk "
-            "score."
+            "It compares the cat's fur colors with the jacket colors. Bigger color "
+            "differences mean shed fur is more likely to stand out."
         ),
-        "Upload a cat photo and a jacket photo.",
         (
-            "Higher risk means stronger color contrast, so shed fur is more likely to "
-            "stand out. Lower risk means the jacket color is closer to the cat palette."
+            "Upload a segmented cat image and a jacket photo. For the jacket, try to use "
+            "a photo where the jacket fills most of the image."
+        ),
+        (
+            "A higher risk score means fur will probably be more noticeable. A lower "
+            "score means the jacket is closer to your cat's fur colors."
         ),
     )
 
@@ -447,16 +454,19 @@ def render_jacket_matcher(num_colors, method):
 
 def render_loaf_scorer():
     feature_note(
-        "Scores how loaf-like the visible cat shape is.",
+        "Scores how loaf-like your cat's shape is.",
         (
-            "The app builds a foreground mask, crops it to the cat shape, estimates edges "
-            "for perimeter, then combines circularity, width-to-height aspect ratio, and "
-            "mask coverage into a 0-10 score."
+            "It looks at the cat's outline and rewards a compact, rounded, filled-in "
+            "shape. A classic loaf should look wide, smooth, and tucked-in."
         ),
-        "Upload a loafing cat image with a transparent, white, or otherwise clean background.",
         (
-            "A higher score means the silhouette is compact, oval, and filled-in. Busy "
-            "backgrounds or visible paws/tails can lower the score."
+            "Upload a loafing cat image that has been cropped or segmented with a "
+            "transparent background. A clean white background can work, but cluttered "
+            "backgrounds will make the score less reliable."
+        ),
+        (
+            "A higher score means a stronger loaf. Visible paws, tails, stretched poses, "
+            "or background clutter can lower the score."
         ),
     )
 
