@@ -1,14 +1,13 @@
 import numpy as np
 
-from app import (
-    cluster_pixels,
+from src.pixelcat.clustering import cluster_pixels, sample_indices
+from src.pixelcat.scores import (
     color_mismatch_score,
     distance_to_similarity,
     loaf_score,
-    palette_table_html,
     palette_distance,
-    sample_indices,
 )
+from src.pixelcat.ui.components import palette_table_html
 
 
 def test_cluster_pixels_returns_sorted_percentages():
