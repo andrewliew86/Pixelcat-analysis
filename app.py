@@ -280,16 +280,150 @@ def show_palette_swatches(results):
             )
 
 
+def apply_pastel_theme():
+    st.markdown(
+        """
+        <style>
+        :root {
+            --cat-ink: #3f3442;
+            --cat-muted: #6d6470;
+            --cat-cream: #fff9f2;
+            --cat-blush: #ffe8ec;
+            --cat-mint: #dff5e8;
+            --cat-lavender: #eee7ff;
+            --cat-blue: #dff0ff;
+            --cat-peach: #ffe4cf;
+            --cat-border: #eadde6;
+            --cat-accent: #cf7892;
+        }
+
+        .stApp {
+            color: var(--cat-ink);
+            background:
+                linear-gradient(135deg, #fff7ed 0%, #fff0f6 42%, #eef8f2 100%);
+        }
+
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #fff4df 0%, #f1ecff 100%);
+            border-right: 1px solid var(--cat-border);
+        }
+
+        [data-testid="stAppViewContainer"] .main .block-container {
+            padding-top: 2.4rem;
+            max-width: 1180px;
+        }
+
+        h1, h2, h3 {
+            color: var(--cat-ink);
+            letter-spacing: 0;
+        }
+
+        h1 {
+            color: #5b4050;
+            font-weight: 760;
+        }
+
+        p, li, label, div {
+            letter-spacing: 0;
+        }
+
+        [data-testid="stMarkdownContainer"] p {
+            color: var(--cat-muted);
+        }
+
+        .cat-feature-note {
+            background: linear-gradient(135deg, var(--cat-cream), var(--cat-lavender));
+            border: 1px solid var(--cat-border);
+            border-left: 6px solid var(--cat-accent);
+            border-radius: 8px;
+            padding: 1rem 1.1rem;
+            margin: 0.45rem 0 1.2rem;
+            box-shadow: 0 10px 28px rgba(97, 67, 86, 0.08);
+        }
+
+        .cat-feature-note p {
+            margin: 0.35rem 0;
+            color: var(--cat-ink);
+            line-height: 1.48;
+        }
+
+        .cat-feature-note strong {
+            color: #7d4a5e;
+        }
+
+        [data-testid="stTabs"] button {
+            background: #fffaf4;
+            border: 1px solid var(--cat-border);
+            border-radius: 8px 8px 0 0;
+            color: #6b5a66;
+            font-weight: 650;
+            margin-right: 0.25rem;
+        }
+
+        [data-testid="stTabs"] button[aria-selected="true"] {
+            background: var(--cat-mint);
+            color: #365846;
+            border-bottom-color: var(--cat-mint);
+        }
+
+        [data-testid="stFileUploaderDropzone"] {
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px dashed #d7b8ca;
+            border-radius: 8px;
+        }
+
+        [data-testid="stFileUploaderDropzone"] button,
+        .stButton button {
+            background: var(--cat-peach);
+            border: 1px solid #efc3aa;
+            border-radius: 8px;
+            color: #5a3f36;
+            font-weight: 650;
+        }
+
+        [data-testid="stAlert"] {
+            background: rgba(223, 245, 232, 0.78);
+            border: 1px solid #badfcc;
+            border-radius: 8px;
+            color: #355444;
+        }
+
+        [data-testid="stMetric"] {
+            background: #fffaf4;
+            border: 1px solid var(--cat-border);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+        }
+
+        [data-testid="stTable"] {
+            border: 1px solid var(--cat-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="slider"] {
+            color: var(--cat-ink);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def feature_note(description, calculation, instructions, interpretation=None):
     lines = [
-        f"**What it does:** {description}",
-        f"**Calculation:** {calculation}",
-        f"**How to use it:** {instructions}",
+        f"<p><strong>What it does:</strong> {description}</p>",
+        f"<p><strong>How it works:</strong> {calculation}</p>",
+        f"<p><strong>How to use it:</strong> {instructions}</p>",
     ]
     if interpretation:
-        lines.append(f"**How to read it:** {interpretation}")
+        lines.append(f"<p><strong>How to read it:</strong> {interpretation}</p>")
 
-    st.info("\n\n".join(lines))
+    st.markdown(
+        f"<div class=\"cat-feature-note\">{''.join(lines)}</div>",
+        unsafe_allow_html=True,
+    )
 
 
 def render_single_analysis(num_colors, method):
@@ -499,6 +633,7 @@ def render_loaf_scorer():
 
 def main():
     st.set_page_config(page_title="Cat Color Quantifier", page_icon="cat", layout="wide")
+    apply_pastel_theme()
     st.title("Cat Color Quantifier")
     st.write(
         "Analyze cat colors, compare palettes, match fur against fabric, and score loafiness."
