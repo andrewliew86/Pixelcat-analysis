@@ -280,7 +280,33 @@ def show_palette_swatches(results):
             )
 
 
+def feature_note(description, calculation, instructions, interpretation=None):
+    lines = [
+        f"**What it does:** {description}",
+        f"**Calculation:** {calculation}",
+        f"**How to use it:** {instructions}",
+    ]
+    if interpretation:
+        lines.append(f"**How to read it:** {interpretation}")
+
+    st.info("\n\n".join(lines))
+
+
 def render_single_analysis(num_colors, method):
+    feature_note(
+        "Finds the main fur colors in one uploaded cat image.",
+        (
+            f"The app keeps foreground pixels, samples up to {MAX_CLUSTER_PIXELS:,} of "
+            "them for speed, clusters RGB values with the selected method, then reports "
+            "each cluster as a percentage of sampled foreground color."
+        ),
+        "Upload a cat image, ideally with a transparent or simple background.",
+        (
+            "Larger percentages are more dominant colors. The RGB plot shows a sampled "
+            "view of how separated or blended the color clusters are."
+        ),
+    )
+
     uploaded = st.file_uploader("Upload a cat image", type=["png", "jpg", "jpeg", "webp"])
     if uploaded is None:
         st.info("Upload an image to get started.")
@@ -317,6 +343,20 @@ def render_single_analysis(num_colors, method):
 
 
 def render_cat_comparison(num_colors, method):
+    feature_note(
+        "Compares the dominant-color palette of one reference cat against other cats.",
+        (
+            "For each reference color, the app finds the nearest comparison color in RGB "
+            "space, weights that distance by the reference color percentage, and averages "
+            "the result in both directions."
+        ),
+        "Upload one reference cat, then upload one or more cats to compare against it.",
+        (
+            "Lower color distance means the palettes are closer. Higher similarity means "
+            "the comparison cat is more color-similar to the reference cat."
+        ),
+    )
+
     reference = st.file_uploader(
         "Reference cat", type=["png", "jpg", "jpeg", "webp"], key="reference-cat"
     )
@@ -355,6 +395,20 @@ def render_cat_comparison(num_colors, method):
 
 
 def render_jacket_matcher(num_colors, method):
+    feature_note(
+        "Estimates how visible cat fur may be on a jacket.",
+        (
+            "The app compares the cat palette and jacket palette using the same weighted "
+            "RGB distance as cat comparison, then scales that mismatch to a 0-100 risk "
+            "score."
+        ),
+        "Upload a cat photo and a jacket photo.",
+        (
+            "Higher risk means stronger color contrast, so shed fur is more likely to "
+            "stand out. Lower risk means the jacket color is closer to the cat palette."
+        ),
+    )
+
     cat = st.file_uploader("Cat photo", type=["png", "jpg", "jpeg", "webp"], key="jacket-cat")
     jacket = st.file_uploader(
         "Jacket photo", type=["png", "jpg", "jpeg", "webp"], key="jacket-photo"
@@ -392,6 +446,20 @@ def render_jacket_matcher(num_colors, method):
 
 
 def render_loaf_scorer():
+    feature_note(
+        "Scores how loaf-like the visible cat shape is.",
+        (
+            "The app builds a foreground mask, crops it to the cat shape, estimates edges "
+            "for perimeter, then combines circularity, width-to-height aspect ratio, and "
+            "mask coverage into a 0-10 score."
+        ),
+        "Upload a loafing cat image with a transparent, white, or otherwise clean background.",
+        (
+            "A higher score means the silhouette is compact, oval, and filled-in. Busy "
+            "backgrounds or visible paws/tails can lower the score."
+        ),
+    )
+
     uploaded = st.file_uploader(
         "Upload a loafing cat image", type=["png", "jpg", "jpeg", "webp"], key="loaf-cat"
     )
