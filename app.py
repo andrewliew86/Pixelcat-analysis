@@ -127,6 +127,38 @@ def analyze_image(file_bytes, num_colors, method):
     }
 
 
+def directed_palette_distance(results_a, results_b):
+    if not results_a or not results_b:
+        return None
+
+    distance = 0.0
+    for color_a in results_a:
+        rgb_a = np.array(color_a["rgb"], dtype=float)
+        nearest = min(
+            np.linalg.norm(rgb_a - np.array(color_b["rgb"], dtype=float))
+            for color_b in results_b
+        )
+        distance += nearest * (color_a["percent"] / 100)
+
+    return float(distance)
+
+
+def palette_distance(results_a, results_b):
+    forward = directed_palette_distance(results_a, results_b)
+    backward = directed_palette_distance(results_b, results_a)
+    if forward is None or backward is None:
+        return None
+
+    return (forward + backward) / 2
+
+
+def distance_to_similarity(distance):
+    if distance is None:
+        return None
+
+    return max(0.0, 100 - distance / 441.67 * 100)
+
+
 def donut_figure(results, title="Pixel Color Clusters"):
     color_pcts = [item["percent"] for item in results]
     color_values = [tuple(c / 255 for c in item["rgb"]) for item in results]
@@ -247,11 +279,49 @@ def render_single_analysis(num_colors, method):
         st.pyplot(fig)
 
 
+def render_cat_comparison(num_colors, method):
+    reference = st.file_uploader(
+        "Reference cat", type=["png", "jpg", "jpeg", "webp"], key="reference-cat"
+    )
+    comparisons = st.file_uploader(
+        "Cats to compare",
+        type=["png", "jpg", "jpeg", "webp"],
+        accept_multiple_files=True,
+        key="comparison-cats",
+    )
+
+    if reference is None or not comparisons:
+        st.info("Upload one reference cat and at least one comparison cat.")
+        return
+
+    ref_analysis = analyze_image(reference.getvalue(), num_colors, method)
+    st.subheader("Reference palette")
+    show_palette_swatches(ref_analysis["results"])
+    if not ref_analysis["results"]:
+        return
+
+    rows = []
+    for cat_file in comparisons:
+        cat_analysis = analyze_image(cat_file.getvalue(), num_colors, method)
+        distance = palette_distance(ref_analysis["results"], cat_analysis["results"])
+        similarity = distance_to_similarity(distance)
+        rows.append(
+            {
+                "Cat": cat_file.name,
+                "Color distance": f"{distance:.1f}" if distance is not None else "N/A",
+                "Similarity": f"{similarity:.1f}%" if similarity is not None else "N/A",
+            }
+        )
+
+    st.subheader("Comparison")
+    st.table(rows)
+
+
 def main():
     st.set_page_config(page_title="Cat Color Quantifier", page_icon="cat", layout="wide")
     st.title("Cat Color Quantifier")
     st.write(
-        "Upload a cat image, sample foreground pixels, and discover the dominant fur colors."
+        "Analyze cat colors and compare palettes across cats."
     )
 
     with st.sidebar:
@@ -264,7 +334,13 @@ def main():
             f"Color models use up to {MAX_CLUSTER_PIXELS:,} foreground pixels for speed."
         )
 
-    render_single_analysis(num_colors, method)
+    tab_analyze, tab_compare = st.tabs(["Analyze", "Compare cats"])
+
+    with tab_analyze:
+        render_single_analysis(num_colors, method)
+
+    with tab_compare:
+        render_cat_comparison(num_colors, method)
 
 
 if __name__ == "__main__":
