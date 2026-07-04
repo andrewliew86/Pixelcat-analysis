@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import streamlit as st
 from matplotlib.colors import ListedColormap
-from PIL import Image
+from PIL import Image, ImageFilter
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.mixture import GaussianMixture
 
@@ -167,6 +167,35 @@ def color_mismatch_score(cat_results, jacket_results):
     return min(100, distance / 441.67 * 100)
 
 
+def loaf_score(mask):
+    if not mask.any():
+        return {"score": 0.0, "circularity": 0.0, "aspect": 0.0, "coverage": 0.0}
+
+    rows, cols = np.where(mask)
+    height = rows.max() - rows.min() + 1
+    width = cols.max() - cols.min() + 1
+    crop = mask[rows.min() : rows.max() + 1, cols.min() : cols.max() + 1]
+    area = int(crop.sum())
+
+    mask_img = Image.fromarray((crop * 255).astype(np.uint8), mode="L")
+    edges = np.asarray(mask_img.filter(ImageFilter.FIND_EDGES)) > 0
+    perimeter = max(1, int(edges.sum()))
+
+    circularity = min(1.0, (4 * np.pi * area) / (perimeter * perimeter))
+    aspect_ratio = width / max(1, height)
+    aspect_score = max(0.0, 1.0 - abs(aspect_ratio - 1.55) / 1.55)
+    coverage = area / max(1, width * height)
+    coverage_score = min(1.0, coverage / 0.75)
+
+    score = 10 * (0.45 * circularity + 0.35 * aspect_score + 0.20 * coverage_score)
+    return {
+        "score": round(float(score), 1),
+        "circularity": round(float(circularity), 3),
+        "aspect": round(float(aspect_ratio), 2),
+        "coverage": round(float(coverage), 3),
+    }
+
+
 def donut_figure(results, title="Pixel Color Clusters"):
     color_pcts = [item["percent"] for item in results]
     color_values = [tuple(c / 255 for c in item["rgb"]) for item in results]
@@ -251,7 +280,211 @@ def show_palette_swatches(results):
             )
 
 
+def apply_pastel_theme():
+    st.markdown(
+        """
+        <style>
+        :root {
+            --cat-ink: #171626;
+            --cat-muted: #3c3854;
+            --cat-cream: #fff4d6;
+            --cat-paper: #fffaf0;
+            --cat-gold: #ffd45a;
+            --cat-red: #f1433b;
+            --cat-red-deep: #c72935;
+            --cat-green: #198d69;
+            --cat-mint: #dfe8d6;
+            --cat-border: #171626;
+        }
+
+        .stApp {
+            color: var(--cat-ink);
+            background:
+                linear-gradient(115deg, #fff0bd 0%, #fff0d8 44%, #dfe8d6 100%);
+        }
+
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #ffe7a8 0%, #f7ead4 58%, #dfe8d6 100%);
+            border-right: 3px solid var(--cat-border);
+        }
+
+        [data-testid="stAppViewContainer"] .main .block-container {
+            padding-top: 2.4rem;
+            max-width: 1180px;
+        }
+
+        h1, h2, h3 {
+            color: var(--cat-ink);
+            letter-spacing: 0;
+        }
+
+        h1 {
+            color: var(--cat-red);
+            font-size: 4.5rem;
+            font-weight: 850;
+            line-height: 0.95;
+            margin-bottom: 0.4rem;
+            text-shadow: 0.07em 0.07em 0 var(--cat-gold);
+        }
+
+        p, li, label, div {
+            letter-spacing: 0;
+        }
+
+        [data-testid="stMarkdownContainer"] p {
+            color: var(--cat-muted);
+        }
+
+        .cat-feature-note {
+            background: var(--cat-paper);
+            border: 3px solid var(--cat-border);
+            border-left: 12px solid var(--cat-green);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+            margin: 1.35rem 0 1.35rem;
+            box-shadow: 7px 7px 0 rgba(23, 22, 38, 0.13);
+        }
+
+        .cat-feature-note p {
+            margin: 0.35rem 0;
+            color: var(--cat-ink);
+            line-height: 1.48;
+        }
+
+        .cat-feature-note strong {
+            color: var(--cat-red-deep);
+        }
+
+        [data-testid="stTabs"] div[data-baseweb="tab-list"] {
+            gap: 0.85rem;
+            border-bottom: 5px solid var(--cat-red);
+            padding: 0.25rem 0 1.2rem;
+            margin: 0.9rem 0 1.2rem;
+        }
+
+        [data-testid="stTabs"] div[data-baseweb="tab-list"] button {
+            flex: 0 0 auto;
+        }
+
+        [data-testid="stTabs"] div[data-baseweb="tab-highlight"],
+        [data-testid="stTabs"] div[data-baseweb="tab-border"] {
+            display: none;
+        }
+
+        [data-testid="stTabs"] button {
+            background: var(--cat-paper);
+            border: 3px solid var(--cat-border);
+            border-radius: 8px;
+            box-shadow: 0 7px 0 var(--cat-ink);
+            color: var(--cat-ink);
+            font-weight: 800;
+            min-height: 46px;
+            padding: 0.55rem 1.15rem;
+            transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+        }
+
+        [data-testid="stTabs"] button:hover {
+            background: #fff6d7;
+            transform: translateY(2px);
+            box-shadow: 0 5px 0 var(--cat-ink);
+        }
+
+        [data-testid="stTabs"] button[aria-selected="true"] {
+            background: var(--cat-red);
+            color: #ffffff;
+            box-shadow: 0 7px 0 var(--cat-ink);
+        }
+
+        [data-testid="stTabs"] button p {
+            color: inherit;
+            font-size: 1rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin: 0;
+            padding: 0;
+        }
+
+        [data-testid="stFileUploaderDropzone"] {
+            background: rgba(255, 250, 240, 0.86);
+            border: 3px dashed #d7a94b;
+            border-radius: 8px;
+        }
+
+        [data-testid="stFileUploaderDropzone"] button,
+        .stButton button {
+            background: var(--cat-gold);
+            border: 3px solid var(--cat-border);
+            border-radius: 8px;
+            box-shadow: 0 5px 0 var(--cat-ink);
+            color: var(--cat-ink);
+            font-weight: 800;
+        }
+
+        [data-testid="stAlert"] {
+            background: rgba(255, 250, 240, 0.88);
+            border: 3px solid var(--cat-border);
+            border-left: 10px solid var(--cat-green);
+            border-radius: 8px;
+            color: var(--cat-ink);
+        }
+
+        [data-testid="stMetric"] {
+            background: var(--cat-paper);
+            border: 3px solid var(--cat-border);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            box-shadow: 6px 6px 0 rgba(23, 22, 38, 0.12);
+        }
+
+        [data-testid="stTable"] {
+            border: 3px solid var(--cat-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="slider"] {
+            color: var(--cat-ink);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def feature_note(description, calculation, instructions, interpretation=None):
+    lines = [
+        f"<p><strong>What it does:</strong> {description}</p>",
+        f"<p><strong>How it works:</strong> {calculation}</p>",
+        f"<p><strong>How to use it:</strong> {instructions}</p>",
+    ]
+    if interpretation:
+        lines.append(f"<p><strong>How to read it:</strong> {interpretation}</p>")
+
+    st.markdown(
+        f"<div class=\"cat-feature-note\">{''.join(lines)}</div>",
+        unsafe_allow_html=True,
+    )
+
+
 def render_single_analysis(num_colors, method):
+    feature_note(
+        "Finds the main colors in your cat's fur.",
+        (
+            "It looks at the visible cat pixels and groups similar colors together. "
+            "For speed, it uses a sample of the image rather than every single pixel."
+        ),
+        (
+            "Upload a cat image that has already been cropped or segmented so the "
+            "background is transparent. A clean white background can also work, but "
+            "busy backgrounds will confuse the results."
+        ),
+        (
+            "Bigger percentages mean that color appears more often in the cat's fur. "
+            "The color chart is a quick summary of the fur palette."
+        ),
+    )
+
     uploaded = st.file_uploader("Upload a cat image", type=["png", "jpg", "jpeg", "webp"])
     if uploaded is None:
         st.info("Upload an image to get started.")
@@ -288,6 +521,22 @@ def render_single_analysis(num_colors, method):
 
 
 def render_cat_comparison(num_colors, method):
+    feature_note(
+        "Compares one cat's fur palette with other cats.",
+        (
+            "It compares the main fur colors from each image and checks how close those "
+            "palettes are to one another."
+        ),
+        (
+            "Upload one reference cat, then upload one or more cats to compare. Use "
+            "segmented or transparent-background cat images for the fairest comparison."
+        ),
+        (
+            "Higher similarity means the cats have more similar fur colors. Lower color "
+            "distance means the palettes are closer."
+        ),
+    )
+
     reference = st.file_uploader(
         "Reference cat", type=["png", "jpg", "jpeg", "webp"], key="reference-cat"
     )
@@ -326,6 +575,22 @@ def render_cat_comparison(num_colors, method):
 
 
 def render_jacket_matcher(num_colors, method):
+    feature_note(
+        "Estimates how much your cat's fur might show up on a jacket.",
+        (
+            "It compares the cat's fur colors with the jacket colors. Bigger color "
+            "differences mean shed fur is more likely to stand out."
+        ),
+        (
+            "Upload a segmented cat image and a jacket photo. For the jacket, try to use "
+            "a photo where the jacket fills most of the image."
+        ),
+        (
+            "A higher risk score means fur will probably be more noticeable. A lower "
+            "score means the jacket is closer to your cat's fur colors."
+        ),
+    )
+
     cat = st.file_uploader("Cat photo", type=["png", "jpg", "jpeg", "webp"], key="jacket-cat")
     jacket = st.file_uploader(
         "Jacket photo", type=["png", "jpg", "jpeg", "webp"], key="jacket-photo"
@@ -362,11 +627,57 @@ def render_jacket_matcher(num_colors, method):
         st.success("Low contrast: fur should be less obvious on this jacket.")
 
 
+def render_loaf_scorer():
+    feature_note(
+        "Scores how loaf-like your cat's shape is.",
+        (
+            "It looks at the cat's outline and rewards a compact, rounded, filled-in "
+            "shape. A classic loaf should look wide, smooth, and tucked-in."
+        ),
+        (
+            "Upload a loafing cat image that has been cropped or segmented with a "
+            "transparent background. A clean white background can work, but cluttered "
+            "backgrounds will make the score less reliable."
+        ),
+        (
+            "A higher score means a stronger loaf. Visible paws, tails, stretched poses, "
+            "or background clutter can lower the score."
+        ),
+    )
+
+    uploaded = st.file_uploader(
+        "Upload a loafing cat image", type=["png", "jpg", "jpeg", "webp"], key="loaf-cat"
+    )
+    if uploaded is None:
+        st.info("Upload a cat image with a clean or transparent background.")
+        return
+
+    img = uploaded_image(uploaded)
+    _, mask = foreground_pixels(img)
+    metrics = loaf_score(mask)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Input image")
+        st.image(img, use_container_width=True)
+    with col2:
+        st.subheader("Loaf score")
+        st.metric("Loafiness", f"{metrics['score']}/10")
+        st.table(
+            [
+                {"Metric": "Circularity", "Value": metrics["circularity"]},
+                {"Metric": "Aspect ratio", "Value": metrics["aspect"]},
+                {"Metric": "Mask coverage", "Value": metrics["coverage"]},
+            ]
+        )
+
+
 def main():
     st.set_page_config(page_title="Cat Color Quantifier", page_icon="cat", layout="wide")
+    apply_pastel_theme()
     st.title("Cat Color Quantifier")
     st.write(
-        "Analyze cat colors, compare palettes, and match fur against fabric."
+        "Analyze cat colors, compare palettes, match fur against fabric, and score loafiness."
     )
 
     with st.sidebar:
@@ -379,8 +690,8 @@ def main():
             f"Color models use up to {MAX_CLUSTER_PIXELS:,} foreground pixels for speed."
         )
 
-    tab_analyze, tab_compare, tab_jacket = st.tabs(
-        ["Analyze", "Compare cats", "Jacket matcher"]
+    tab_analyze, tab_compare, tab_jacket, tab_loaf = st.tabs(
+        ["Analyze", "Compare cats", "Jacket matcher", "Loaf scorer"]
     )
 
     with tab_analyze:
@@ -391,6 +702,9 @@ def main():
 
     with tab_jacket:
         render_jacket_matcher(num_colors, method)
+
+    with tab_loaf:
+        render_loaf_scorer()
 
 
 if __name__ == "__main__":

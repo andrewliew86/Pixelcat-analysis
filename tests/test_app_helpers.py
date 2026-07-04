@@ -4,6 +4,7 @@ from app import (
     cluster_pixels,
     color_mismatch_score,
     distance_to_similarity,
+    loaf_score,
     palette_distance,
     sample_indices,
 )
@@ -66,6 +67,17 @@ def test_palette_distance_is_symmetric():
     assert palette_distance(palette_a, palette_b) == palette_distance(
         palette_b, palette_a
     )
+
+
+def test_loaf_score_rewards_compact_oval_mask():
+    rows, cols = np.ogrid[:80, :120]
+    oval = ((rows - 40) / 25) ** 2 + ((cols - 60) / 42) ** 2 <= 1
+
+    metrics = loaf_score(oval)
+
+    assert 0 <= metrics["score"] <= 10
+    assert metrics["score"] > 5
+    assert metrics["aspect"] > 1
 
 
 def test_sample_indices_caps_rows_reproducibly():
