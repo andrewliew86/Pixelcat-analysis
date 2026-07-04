@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import streamlit as st
 from matplotlib.colors import ListedColormap
-from PIL import Image
+from PIL import Image, ImageFilter
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.mixture import GaussianMixture
 
@@ -165,6 +165,35 @@ def color_mismatch_score(cat_results, jacket_results):
         return None
 
     return min(100, distance / 441.67 * 100)
+
+
+def loaf_score(mask):
+    if not mask.any():
+        return {"score": 0.0, "circularity": 0.0, "aspect": 0.0, "coverage": 0.0}
+
+    rows, cols = np.where(mask)
+    height = rows.max() - rows.min() + 1
+    width = cols.max() - cols.min() + 1
+    crop = mask[rows.min() : rows.max() + 1, cols.min() : cols.max() + 1]
+    area = int(crop.sum())
+
+    mask_img = Image.fromarray((crop * 255).astype(np.uint8), mode="L")
+    edges = np.asarray(mask_img.filter(ImageFilter.FIND_EDGES)) > 0
+    perimeter = max(1, int(edges.sum()))
+
+    circularity = min(1.0, (4 * np.pi * area) / (perimeter * perimeter))
+    aspect_ratio = width / max(1, height)
+    aspect_score = max(0.0, 1.0 - abs(aspect_ratio - 1.55) / 1.55)
+    coverage = area / max(1, width * height)
+    coverage_score = min(1.0, coverage / 0.75)
+
+    score = 10 * (0.45 * circularity + 0.35 * aspect_score + 0.20 * coverage_score)
+    return {
+        "score": round(float(score), 1),
+        "circularity": round(float(circularity), 3),
+        "aspect": round(float(aspect_ratio), 2),
+        "coverage": round(float(coverage), 3),
+    }
 
 
 def donut_figure(results, title="Pixel Color Clusters"):
@@ -362,11 +391,39 @@ def render_jacket_matcher(num_colors, method):
         st.success("Low contrast: fur should be less obvious on this jacket.")
 
 
+def render_loaf_scorer():
+    uploaded = st.file_uploader(
+        "Upload a loafing cat image", type=["png", "jpg", "jpeg", "webp"], key="loaf-cat"
+    )
+    if uploaded is None:
+        st.info("Upload a cat image with a clean or transparent background.")
+        return
+
+    img = uploaded_image(uploaded)
+    _, mask = foreground_pixels(img)
+    metrics = loaf_score(mask)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Input image")
+        st.image(img, use_container_width=True)
+    with col2:
+        st.subheader("Loaf score")
+        st.metric("Loafiness", f"{metrics['score']}/10")
+        st.table(
+            [
+                {"Metric": "Circularity", "Value": metrics["circularity"]},
+                {"Metric": "Aspect ratio", "Value": metrics["aspect"]},
+                {"Metric": "Mask coverage", "Value": metrics["coverage"]},
+            ]
+        )
+
+
 def main():
     st.set_page_config(page_title="Cat Color Quantifier", page_icon="cat", layout="wide")
     st.title("Cat Color Quantifier")
     st.write(
-        "Analyze cat colors, compare palettes, and match fur against fabric."
+        "Analyze cat colors, compare palettes, match fur against fabric, and score loafiness."
     )
 
     with st.sidebar:
@@ -379,8 +436,8 @@ def main():
             f"Color models use up to {MAX_CLUSTER_PIXELS:,} foreground pixels for speed."
         )
 
-    tab_analyze, tab_compare, tab_jacket = st.tabs(
-        ["Analyze", "Compare cats", "Jacket matcher"]
+    tab_analyze, tab_compare, tab_jacket, tab_loaf = st.tabs(
+        ["Analyze", "Compare cats", "Jacket matcher", "Loaf scorer"]
     )
 
     with tab_analyze:
@@ -391,6 +448,9 @@ def main():
 
     with tab_jacket:
         render_jacket_matcher(num_colors, method)
+
+    with tab_loaf:
+        render_loaf_scorer()
 
 
 if __name__ == "__main__":
