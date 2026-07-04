@@ -159,6 +159,14 @@ def distance_to_similarity(distance):
     return max(0.0, 100 - distance / 441.67 * 100)
 
 
+def color_mismatch_score(cat_results, jacket_results):
+    distance = palette_distance(cat_results, jacket_results)
+    if distance is None:
+        return None
+
+    return min(100, distance / 441.67 * 100)
+
+
 def donut_figure(results, title="Pixel Color Clusters"):
     color_pcts = [item["percent"] for item in results]
     color_values = [tuple(c / 255 for c in item["rgb"]) for item in results]
@@ -317,11 +325,48 @@ def render_cat_comparison(num_colors, method):
     st.table(rows)
 
 
+def render_jacket_matcher(num_colors, method):
+    cat = st.file_uploader("Cat photo", type=["png", "jpg", "jpeg", "webp"], key="jacket-cat")
+    jacket = st.file_uploader(
+        "Jacket photo", type=["png", "jpg", "jpeg", "webp"], key="jacket-photo"
+    )
+
+    if cat is None or jacket is None:
+        st.info("Upload a cat image and a jacket image.")
+        return
+
+    cat_analysis = analyze_image(cat.getvalue(), num_colors, method)
+    jacket_analysis = analyze_image(jacket.getvalue(), num_colors, method)
+    mismatch = color_mismatch_score(cat_analysis["results"], jacket_analysis["results"])
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Cat palette")
+        st.image(cat_analysis["img"], use_container_width=True)
+        show_palette_swatches(cat_analysis["results"])
+    with col2:
+        st.subheader("Jacket palette")
+        st.image(jacket_analysis["img"], use_container_width=True)
+        show_palette_swatches(jacket_analysis["results"])
+
+    if mismatch is None:
+        st.warning("Could not compare colors because one image has no foreground pixels.")
+        return
+
+    st.metric("Fur visibility risk", f"{mismatch:.0f}/100")
+    if mismatch >= 65:
+        st.warning("High contrast: light fur on dark fabric, or the reverse, may stand out.")
+    elif mismatch >= 35:
+        st.info("Moderate contrast: some fur is likely to be visible.")
+    else:
+        st.success("Low contrast: fur should be less obvious on this jacket.")
+
+
 def main():
     st.set_page_config(page_title="Cat Color Quantifier", page_icon="cat", layout="wide")
     st.title("Cat Color Quantifier")
     st.write(
-        "Analyze cat colors and compare palettes across cats."
+        "Analyze cat colors, compare palettes, and match fur against fabric."
     )
 
     with st.sidebar:
@@ -334,13 +379,18 @@ def main():
             f"Color models use up to {MAX_CLUSTER_PIXELS:,} foreground pixels for speed."
         )
 
-    tab_analyze, tab_compare = st.tabs(["Analyze", "Compare cats"])
+    tab_analyze, tab_compare, tab_jacket = st.tabs(
+        ["Analyze", "Compare cats", "Jacket matcher"]
+    )
 
     with tab_analyze:
         render_single_analysis(num_colors, method)
 
     with tab_compare:
         render_cat_comparison(num_colors, method)
+
+    with tab_jacket:
+        render_jacket_matcher(num_colors, method)
 
 
 if __name__ == "__main__":

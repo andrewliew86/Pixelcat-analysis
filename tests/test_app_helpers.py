@@ -2,6 +2,7 @@ import numpy as np
 
 from app import (
     cluster_pixels,
+    color_mismatch_score,
     distance_to_similarity,
     palette_distance,
     sample_indices,
@@ -51,6 +52,7 @@ def test_palette_distance_is_zero_for_same_palette():
     palette = [{"rgb": (100, 120, 140), "hex": "#64788c", "percent": 100.0}]
 
     assert palette_distance(palette, palette) == 0
+    assert color_mismatch_score(palette, palette) == 0
     assert distance_to_similarity(0) == 100
 
 
