@@ -1,4 +1,5 @@
 from io import BytesIO
+from html import escape
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -60,11 +61,16 @@ def sample_rows(values, max_rows, seed=42):
     return values[sample_indices(len(values), max_rows, seed)]
 
 
-def cluster_pixels(pixels, num_colors=3, method="Fast K-Means"):
+def cluster_pixels(
+    pixels,
+    num_colors=3,
+    method="Fast K-Means",
+    max_cluster_pixels=MAX_CLUSTER_PIXELS,
+):
     if len(pixels) == 0:
         return [], np.empty((0, 3), dtype=np.uint8), np.array([], dtype=int)
 
-    fit_pixels = sample_rows(pixels, MAX_CLUSTER_PIXELS)
+    fit_pixels = sample_rows(pixels, max_cluster_pixels)
     unique_count = len(np.unique(fit_pixels, axis=0))
     n_clusters = max(1, min(num_colors, unique_count, len(fit_pixels)))
 
@@ -113,10 +119,15 @@ def cluster_pixels(pixels, num_colors=3, method="Fast K-Means"):
 
 
 @st.cache_data(show_spinner=False)
-def analyze_image(file_bytes, num_colors, method):
+def analyze_image(file_bytes, num_colors, method, max_cluster_pixels):
     img = load_image_from_bytes(file_bytes)
     pixels, mask = foreground_pixels(img)
-    results, scatter_pixels, scatter_labels = cluster_pixels(pixels, num_colors, method)
+    results, scatter_pixels, scatter_labels = cluster_pixels(
+        pixels,
+        num_colors,
+        method,
+        max_cluster_pixels,
+    )
     return {
         "img": img,
         "results": results,
@@ -256,6 +267,47 @@ def palette_table(results):
     ]
 
 
+def render_palette_table(results):
+    if not results:
+        st.info("No cluster results to show yet.")
+        return
+
+    rows = []
+    for item in results:
+        color = escape(item["hex"])
+        rows.append(
+            f"""
+            <tr>
+                <td><span class="color-chip" style="background:{color};"></span>{color}</td>
+                <td>{item["rgb"][0]}</td>
+                <td>{item["rgb"][1]}</td>
+                <td>{item["rgb"][2]}</td>
+                <td>{item["percent"]:.2f}%</td>
+            </tr>
+            """
+        )
+
+    st.markdown(
+        f"""
+        <div class="palette-table-wrap">
+            <table class="palette-table">
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>R</th>
+                        <th>G</th>
+                        <th>B</th>
+                        <th>Percent</th>
+                    </tr>
+                </thead>
+                <tbody>{''.join(rows)}</tbody>
+            </table>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def show_palette_swatches(results):
     if not results:
         st.warning("No foreground pixels found. Try an image with visible cat pixels.")
@@ -306,6 +358,45 @@ def apply_pastel_theme():
         [data-testid="stSidebar"] {
             background: linear-gradient(180deg, #ffe7a8 0%, #f7ead4 58%, #dfe8d6 100%);
             border-right: 3px solid var(--cat-border);
+        }
+
+        [data-testid="stSidebar"],
+        [data-testid="stSidebar"] label,
+        [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] span,
+        [data-testid="stSidebar"] div {
+            color: var(--cat-ink);
+        }
+
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3 {
+            color: var(--cat-red-deep);
+            text-shadow: none;
+        }
+
+        .sidebar-note {
+            background: rgba(255, 250, 240, 0.76);
+            border: 2px solid var(--cat-border);
+            border-left: 8px solid var(--cat-green);
+            border-radius: 8px;
+            color: var(--cat-ink);
+            font-weight: 650;
+            line-height: 1.45;
+            margin-top: 1rem;
+            padding: 0.75rem 0.85rem;
+        }
+
+        [data-testid="stSidebar"] div[data-baseweb="select"] > div {
+            background: var(--cat-paper);
+            border: 3px solid var(--cat-border);
+            border-radius: 8px;
+            color: var(--cat-ink);
+        }
+
+        [data-testid="stSidebar"] div[data-baseweb="select"] svg {
+            color: var(--cat-ink);
+            fill: var(--cat-ink);
         }
 
         [data-testid="stAppViewContainer"] .main .block-container {
@@ -442,6 +533,54 @@ def apply_pastel_theme():
             overflow: hidden;
         }
 
+        .palette-table-wrap {
+            background: rgba(255, 250, 240, 0.78);
+            border: 3px solid var(--cat-border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 6px 6px 0 rgba(23, 22, 38, 0.10);
+        }
+
+        .palette-table {
+            border-collapse: collapse;
+            color: var(--cat-ink);
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .palette-table th {
+            background: var(--cat-gold);
+            border-bottom: 3px solid var(--cat-border);
+            font-weight: 850;
+            padding: 0.75rem 0.9rem;
+            text-align: left;
+        }
+
+        .palette-table td {
+            border-bottom: 1px solid rgba(23, 22, 38, 0.16);
+            padding: 0.7rem 0.9rem;
+            vertical-align: middle;
+        }
+
+        .palette-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .palette-table th:not(:first-child),
+        .palette-table td:not(:first-child) {
+            text-align: right;
+        }
+
+        .color-chip {
+            border: 2px solid var(--cat-border);
+            border-radius: 6px;
+            display: inline-block;
+            height: 1rem;
+            margin-right: 0.55rem;
+            vertical-align: -0.12rem;
+            width: 1rem;
+        }
+
         div[data-baseweb="select"] > div,
         div[data-baseweb="slider"] {
             color: var(--cat-ink);
@@ -467,7 +606,7 @@ def feature_note(description, calculation, instructions, interpretation=None):
     )
 
 
-def render_single_analysis(num_colors, method):
+def render_single_analysis(num_colors, method, max_cluster_pixels):
     feature_note(
         "Finds the main colors in your cat's fur.",
         (
@@ -491,7 +630,12 @@ def render_single_analysis(num_colors, method):
         return
 
     with st.spinner("Analyzing sampled foreground pixels..."):
-        analysis = analyze_image(uploaded.getvalue(), num_colors, method)
+        analysis = analyze_image(
+            uploaded.getvalue(),
+            num_colors,
+            method,
+            max_cluster_pixels,
+        )
 
     col1, col2 = st.columns(2)
     with col1:
@@ -508,7 +652,7 @@ def render_single_analysis(num_colors, method):
             st.pyplot(donut_figure(analysis["results"]))
 
     st.subheader("Cluster breakdown")
-    st.table(palette_table(analysis["results"]))
+    render_palette_table(analysis["results"])
 
     st.subheader("Sampled RGB plot")
     fig = scatter3d_figure(
@@ -520,7 +664,7 @@ def render_single_analysis(num_colors, method):
         st.pyplot(fig)
 
 
-def render_cat_comparison(num_colors, method):
+def render_cat_comparison(num_colors, method, max_cluster_pixels):
     feature_note(
         "Compares one cat's fur palette with other cats.",
         (
@@ -551,7 +695,12 @@ def render_cat_comparison(num_colors, method):
         st.info("Upload one reference cat and at least one comparison cat.")
         return
 
-    ref_analysis = analyze_image(reference.getvalue(), num_colors, method)
+    ref_analysis = analyze_image(
+        reference.getvalue(),
+        num_colors,
+        method,
+        max_cluster_pixels,
+    )
     st.subheader("Reference palette")
     show_palette_swatches(ref_analysis["results"])
     if not ref_analysis["results"]:
@@ -559,7 +708,12 @@ def render_cat_comparison(num_colors, method):
 
     rows = []
     for cat_file in comparisons:
-        cat_analysis = analyze_image(cat_file.getvalue(), num_colors, method)
+        cat_analysis = analyze_image(
+            cat_file.getvalue(),
+            num_colors,
+            method,
+            max_cluster_pixels,
+        )
         distance = palette_distance(ref_analysis["results"], cat_analysis["results"])
         similarity = distance_to_similarity(distance)
         rows.append(
@@ -574,7 +728,7 @@ def render_cat_comparison(num_colors, method):
     st.table(rows)
 
 
-def render_jacket_matcher(num_colors, method):
+def render_jacket_matcher(num_colors, method, max_cluster_pixels):
     feature_note(
         "Estimates how much your cat's fur might show up on a jacket.",
         (
@@ -600,8 +754,18 @@ def render_jacket_matcher(num_colors, method):
         st.info("Upload a cat image and a jacket image.")
         return
 
-    cat_analysis = analyze_image(cat.getvalue(), num_colors, method)
-    jacket_analysis = analyze_image(jacket.getvalue(), num_colors, method)
+    cat_analysis = analyze_image(
+        cat.getvalue(),
+        num_colors,
+        method,
+        max_cluster_pixels,
+    )
+    jacket_analysis = analyze_image(
+        jacket.getvalue(),
+        num_colors,
+        method,
+        max_cluster_pixels,
+    )
     mismatch = color_mismatch_score(cat_analysis["results"], jacket_analysis["results"])
 
     col1, col2 = st.columns(2)
@@ -686,8 +850,21 @@ def main():
             "Number of color clusters", min_value=2, max_value=10, value=3
         )
         method = st.selectbox("Clustering method", ["Fast K-Means", "Gaussian Mixture"])
-        st.caption(
-            f"Color models use up to {MAX_CLUSTER_PIXELS:,} foreground pixels for speed."
+        max_cluster_pixels = st.slider(
+            "Foreground pixel sample limit",
+            min_value=5_000,
+            max_value=100_000,
+            value=MAX_CLUSTER_PIXELS,
+            step=5_000,
+        )
+        st.markdown(
+            f"""
+            <div class="sidebar-note">
+                Uses up to {max_cluster_pixels:,} visible cat pixels for clustering.
+                Higher values may be a little more precise but slower.
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
     tab_analyze, tab_compare, tab_jacket, tab_loaf = st.tabs(
@@ -695,13 +872,13 @@ def main():
     )
 
     with tab_analyze:
-        render_single_analysis(num_colors, method)
+        render_single_analysis(num_colors, method, max_cluster_pixels)
 
     with tab_compare:
-        render_cat_comparison(num_colors, method)
+        render_cat_comparison(num_colors, method, max_cluster_pixels)
 
     with tab_jacket:
-        render_jacket_matcher(num_colors, method)
+        render_jacket_matcher(num_colors, method, max_cluster_pixels)
 
     with tab_loaf:
         render_loaf_scorer()

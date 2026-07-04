@@ -86,3 +86,17 @@ def test_sample_indices_caps_rows_reproducibly():
 
     assert len(first) == 10
     assert np.array_equal(first, second)
+
+
+def test_cluster_pixels_respects_sample_limit():
+    dark = np.tile(np.array([[20, 20, 20]], dtype=np.uint8), (80, 1))
+    light = np.tile(np.array([[220, 220, 220]], dtype=np.uint8), (80, 1))
+
+    _, scatter_pixels, scatter_labels = cluster_pixels(
+        np.vstack([dark, light]),
+        num_colors=2,
+        max_cluster_pixels=25,
+    )
+
+    assert len(scatter_pixels) == 25
+    assert len(scatter_labels) == 25
