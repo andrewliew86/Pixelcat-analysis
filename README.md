@@ -1,56 +1,40 @@
-<div align='center'>
+# Cat Color Quantifier
 
-<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/pixel_cat_logo.png" width=60% height=60%>
+A fun Streamlit app for cat image analysis. It can:
 
-</div>
+- find dominant fur colors
+- compare color palettes between cats
+- estimate how visible cat fur may be on a jacket
+- score a cat's loafiness
 
-# 🎨 Cat Color Quantifier
+## Best Inputs
 
-Ever wondered what colors make up your cat's fur? This fun project uses image processing and machine learning to analyze cat images and extract dominant colors! Purr-fect for cat lovers and data enthusiasts alike.
+Use cat images that are already cropped or segmented with a transparent background. Clean white backgrounds can also work. Busy backgrounds will make the color and loaf results less reliable.
 
-## Features
-- 🖼️ Load images with automatic background removal
-- 🎯 Cluster pixels using K-Means algorithm
-- 📊 Visualize color clusters in 3D RGB space
-- 📈 Get percentages of each dominant color
+For jacket matching, use a segmented cat image and a jacket photo where the jacket fills most of the image.
 
-## Requirements
-- Python 3.x
-- PIL (Pillow)
-- NumPy
-- Scikit-learn
-- Matplotlib
+## Run Locally
 
-## Usage
-
-### Notebook
-1. Git clone repository
-1. Place your cat images in `images/bg-removed/` (or `images/plus-bg/` for images with background)
-2. Open and run `image_quantification.ipynb` in Jupyter
-3. Adjust `num_colors` parameter for more/less color clusters
-4. Watch the magic happen and discover your cat's color palette!
-
-### Streamlit app
-A simple web UI is also provided in `app.py`.
-
-Run locally:
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Or with Docker:
+Open `http://localhost:8501`.
+
+## Docker
+
 ```bash
 docker build -t cat-color-quantifier .
 docker run --rm -p 8501:8501 cat-color-quantifier
 ```
-Then open http://localhost:8501, upload an image, and pick the number of color clusters.
 
-> **Note on backgrounds:** for best results, upload an image with the background already removed (e.g. a transparent-background PNG). If the uploaded image has no alpha channel, the app falls back to a simple heuristic that treats near-white pixels (R, G, B all > 200) as background and ignores them. This works for cats photographed against a clean white backdrop but will misclassify white fur or busy/dark backgrounds — pre-remove the background for anything else.
+## Tests
 
+```bash
+python -m pytest -q
+```
 
-## Example output from streamlit app
-<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/donut_output.png" width=70% height=70%>
-Simple streamlit app showing input image, quantitative output (donut plot)  
-<img src="https://github.com/andrewliew86/Pixelcat-analysis/blob/main/images/plots/3d-rgb-plot-example.png" width=70% height=70%>
-K-Means cluster plot of pixel and rough percentage quantification of color percentages
+## Deployment
+
+This app needs a Python server, so it cannot run directly on GitHub Pages. Use Streamlit Community Cloud, Hugging Face Spaces, Render, Railway, or Fly.io.
