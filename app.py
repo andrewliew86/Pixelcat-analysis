@@ -267,45 +267,42 @@ def palette_table(results):
     ]
 
 
+def palette_table_html(results):
+    rows = []
+    for item in results:
+        color = escape(item["hex"])
+        rows.append(
+            "<tr>"
+            f'<td><span class="color-chip" style="background:{color};"></span>{color}</td>'
+            f"<td>{item['rgb'][0]}</td>"
+            f"<td>{item['rgb'][1]}</td>"
+            f"<td>{item['rgb'][2]}</td>"
+            f"<td>{item['percent']:.2f}%</td>"
+            "</tr>"
+        )
+
+    return (
+        '<div class="palette-table-wrap">'
+        '<table class="palette-table">'
+        "<thead><tr>"
+        "<th>Color</th>"
+        "<th>R</th>"
+        "<th>G</th>"
+        "<th>B</th>"
+        "<th>Percent</th>"
+        "</tr></thead>"
+        f"<tbody>{''.join(rows)}</tbody>"
+        "</table>"
+        "</div>"
+    )
+
+
 def render_palette_table(results):
     if not results:
         st.info("No cluster results to show yet.")
         return
 
-    rows = []
-    for item in results:
-        color = escape(item["hex"])
-        rows.append(
-            f"""
-            <tr>
-                <td><span class="color-chip" style="background:{color};"></span>{color}</td>
-                <td>{item["rgb"][0]}</td>
-                <td>{item["rgb"][1]}</td>
-                <td>{item["rgb"][2]}</td>
-                <td>{item["percent"]:.2f}%</td>
-            </tr>
-            """
-        )
-
-    st.markdown(
-        f"""
-        <div class="palette-table-wrap">
-            <table class="palette-table">
-                <thead>
-                    <tr>
-                        <th>Color</th>
-                        <th>R</th>
-                        <th>G</th>
-                        <th>B</th>
-                        <th>Percent</th>
-                    </tr>
-                </thead>
-                <tbody>{''.join(rows)}</tbody>
-            </table>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown(palette_table_html(results), unsafe_allow_html=True)
 
 
 def show_palette_swatches(results):

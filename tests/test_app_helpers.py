@@ -5,6 +5,7 @@ from app import (
     color_mismatch_score,
     distance_to_similarity,
     loaf_score,
+    palette_table_html,
     palette_distance,
     sample_indices,
 )
@@ -100,3 +101,13 @@ def test_cluster_pixels_respects_sample_limit():
 
     assert len(scatter_pixels) == 25
     assert len(scatter_labels) == 25
+
+
+def test_palette_table_html_does_not_render_rows_as_code():
+    html = palette_table_html(
+        [{"rgb": (67, 51, 34), "hex": "#433322", "percent": 32.67}]
+    )
+
+    assert html.startswith('<div class="palette-table-wrap">')
+    assert "<tbody><tr>" in html
+    assert "\n            <tr>" not in html
