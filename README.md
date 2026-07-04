@@ -7,6 +7,8 @@ A fun Streamlit app for cat image analysis. It can:
 - estimate how visible cat fur may be on a jacket
 - score a cat's loafiness
 
+Check out the deployed Pixel cat app for yourself on Streamlit Community Cloud: https://pixelcat-analysis.streamlit.app
+
 ## Best Inputs
 
 Use cat images that are already cropped or segmented with a transparent background. Clean white backgrounds can also work. Busy backgrounds will make the color and loaf results less reliable.
