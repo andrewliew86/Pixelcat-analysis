@@ -28,6 +28,20 @@ def test_cluster_pixels_handles_empty_input():
     assert len(scatter_labels) == 0
 
 
+def test_cluster_pixels_supports_gaussian_mixture():
+    dark = np.tile(np.array([[20, 20, 20]], dtype=np.uint8), (30, 1))
+    light = np.tile(np.array([[220, 220, 220]], dtype=np.uint8), (30, 1))
+    results, scatter_pixels, scatter_labels = cluster_pixels(
+        np.vstack([dark, light]),
+        num_colors=2,
+        method="Gaussian Mixture",
+    )
+
+    assert len(results) == 2
+    assert round(sum(item["percent"] for item in results), 3) == 100
+    assert len(scatter_pixels) == len(scatter_labels)
+
+
 def test_sample_indices_caps_rows_reproducibly():
     first = sample_indices(100, 10)
     second = sample_indices(100, 10)

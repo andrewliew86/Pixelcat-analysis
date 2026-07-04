@@ -6,6 +6,7 @@ import streamlit as st
 from matplotlib.colors import ListedColormap
 from PIL import Image
 from sklearn.cluster import MiniBatchKMeans
+from sklearn.mixture import GaussianMixture
 
 
 MAX_CLUSTER_PIXELS = 30_000
@@ -59,7 +60,7 @@ def sample_rows(values, max_rows, seed=42):
     return values[sample_indices(len(values), max_rows, seed)]
 
 
-def cluster_pixels(pixels, num_colors=3):
+def cluster_pixels(pixels, num_colors=3, method="Fast K-Means"):
     if len(pixels) == 0:
         return [], np.empty((0, 3), dtype=np.uint8), np.array([], dtype=int)
 
@@ -67,14 +68,25 @@ def cluster_pixels(pixels, num_colors=3):
     unique_count = len(np.unique(fit_pixels, axis=0))
     n_clusters = max(1, min(num_colors, unique_count, len(fit_pixels)))
 
-    model = MiniBatchKMeans(
-        n_clusters=n_clusters,
-        random_state=42,
-        n_init=3,
-        batch_size=4096,
-    )
-    labels = model.fit_predict(fit_pixels)
-    centers = model.cluster_centers_
+    if method == "Gaussian Mixture":
+        model = GaussianMixture(
+            n_components=n_clusters,
+            covariance_type="full",
+            random_state=42,
+            reg_covar=1e-3,
+            max_iter=150,
+        )
+        labels = model.fit_predict(fit_pixels)
+        centers = model.means_
+    else:
+        model = MiniBatchKMeans(
+            n_clusters=n_clusters,
+            random_state=42,
+            n_init=3,
+            batch_size=4096,
+        )
+        labels = model.fit_predict(fit_pixels)
+        centers = model.cluster_centers_
 
     counts = np.bincount(labels, minlength=n_clusters)
     total = counts.sum()
@@ -101,10 +113,10 @@ def cluster_pixels(pixels, num_colors=3):
 
 
 @st.cache_data(show_spinner=False)
-def analyze_image(file_bytes, num_colors):
+def analyze_image(file_bytes, num_colors, method):
     img = load_image_from_bytes(file_bytes)
     pixels, mask = foreground_pixels(img)
-    results, scatter_pixels, scatter_labels = cluster_pixels(pixels, num_colors)
+    results, scatter_pixels, scatter_labels = cluster_pixels(pixels, num_colors, method)
     return {
         "img": img,
         "results": results,
@@ -199,14 +211,14 @@ def show_palette_swatches(results):
             )
 
 
-def render_single_analysis(num_colors):
+def render_single_analysis(num_colors, method):
     uploaded = st.file_uploader("Upload a cat image", type=["png", "jpg", "jpeg", "webp"])
     if uploaded is None:
         st.info("Upload an image to get started.")
         return
 
     with st.spinner("Analyzing sampled foreground pixels..."):
-        analysis = analyze_image(uploaded.getvalue(), num_colors)
+        analysis = analyze_image(uploaded.getvalue(), num_colors, method)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -247,11 +259,12 @@ def main():
         num_colors = st.slider(
             "Number of color clusters", min_value=2, max_value=10, value=3
         )
+        method = st.selectbox("Clustering method", ["Fast K-Means", "Gaussian Mixture"])
         st.caption(
             f"Color models use up to {MAX_CLUSTER_PIXELS:,} foreground pixels for speed."
         )
 
-    render_single_analysis(num_colors)
+    render_single_analysis(num_colors, method)
 
 
 if __name__ == "__main__":
