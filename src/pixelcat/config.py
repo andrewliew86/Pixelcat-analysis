@@ -1,0 +1,4 @@
+MAX_CLUSTER_PIXELS = 30_000
+MAX_SCATTER_PIXELS = 6_000
+CLUSTER_METHODS = ["Fast K-Means", "Gaussian Mixture"]
+
