@@ -285,27 +285,27 @@ def apply_pastel_theme():
         """
         <style>
         :root {
-            --cat-ink: #3f3442;
-            --cat-muted: #6d6470;
-            --cat-cream: #fff9f2;
-            --cat-blush: #ffe8ec;
-            --cat-mint: #dff5e8;
-            --cat-lavender: #eee7ff;
-            --cat-blue: #dff0ff;
-            --cat-peach: #ffe4cf;
-            --cat-border: #eadde6;
-            --cat-accent: #cf7892;
+            --cat-ink: #171626;
+            --cat-muted: #3c3854;
+            --cat-cream: #fff4d6;
+            --cat-paper: #fffaf0;
+            --cat-gold: #ffd45a;
+            --cat-red: #f1433b;
+            --cat-red-deep: #c72935;
+            --cat-green: #198d69;
+            --cat-mint: #dfe8d6;
+            --cat-border: #171626;
         }
 
         .stApp {
             color: var(--cat-ink);
             background:
-                linear-gradient(135deg, #fff7ed 0%, #fff0f6 42%, #eef8f2 100%);
+                linear-gradient(115deg, #fff0bd 0%, #fff0d8 44%, #dfe8d6 100%);
         }
 
         [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #fff4df 0%, #f1ecff 100%);
-            border-right: 1px solid var(--cat-border);
+            background: linear-gradient(180deg, #ffe7a8 0%, #f7ead4 58%, #dfe8d6 100%);
+            border-right: 3px solid var(--cat-border);
         }
 
         [data-testid="stAppViewContainer"] .main .block-container {
@@ -319,8 +319,12 @@ def apply_pastel_theme():
         }
 
         h1 {
-            color: #5b4050;
-            font-weight: 760;
+            color: var(--cat-red);
+            font-size: 4.5rem;
+            font-weight: 850;
+            line-height: 0.95;
+            margin-bottom: 0.4rem;
+            text-shadow: 0.07em 0.07em 0 var(--cat-gold);
         }
 
         p, li, label, div {
@@ -332,13 +336,13 @@ def apply_pastel_theme():
         }
 
         .cat-feature-note {
-            background: linear-gradient(135deg, var(--cat-cream), var(--cat-lavender));
-            border: 1px solid var(--cat-border);
-            border-left: 6px solid var(--cat-accent);
+            background: var(--cat-paper);
+            border: 3px solid var(--cat-border);
+            border-left: 12px solid var(--cat-green);
             border-radius: 8px;
-            padding: 1rem 1.1rem;
-            margin: 0.45rem 0 1.2rem;
-            box-shadow: 0 10px 28px rgba(97, 67, 86, 0.08);
+            padding: 1rem 1.15rem;
+            margin: 1.35rem 0 1.35rem;
+            box-shadow: 7px 7px 0 rgba(23, 22, 38, 0.13);
         }
 
         .cat-feature-note p {
@@ -348,55 +352,92 @@ def apply_pastel_theme():
         }
 
         .cat-feature-note strong {
-            color: #7d4a5e;
+            color: var(--cat-red-deep);
+        }
+
+        [data-testid="stTabs"] div[data-baseweb="tab-list"] {
+            gap: 0.85rem;
+            border-bottom: 5px solid var(--cat-red);
+            padding: 0.25rem 0 1.2rem;
+            margin: 0.9rem 0 1.2rem;
+        }
+
+        [data-testid="stTabs"] div[data-baseweb="tab-list"] button {
+            flex: 0 0 auto;
+        }
+
+        [data-testid="stTabs"] div[data-baseweb="tab-highlight"],
+        [data-testid="stTabs"] div[data-baseweb="tab-border"] {
+            display: none;
         }
 
         [data-testid="stTabs"] button {
-            background: #fffaf4;
-            border: 1px solid var(--cat-border);
-            border-radius: 8px 8px 0 0;
-            color: #6b5a66;
-            font-weight: 650;
-            margin-right: 0.25rem;
+            background: var(--cat-paper);
+            border: 3px solid var(--cat-border);
+            border-radius: 8px;
+            box-shadow: 0 7px 0 var(--cat-ink);
+            color: var(--cat-ink);
+            font-weight: 800;
+            min-height: 46px;
+            padding: 0.55rem 1.15rem;
+            transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+        }
+
+        [data-testid="stTabs"] button:hover {
+            background: #fff6d7;
+            transform: translateY(2px);
+            box-shadow: 0 5px 0 var(--cat-ink);
         }
 
         [data-testid="stTabs"] button[aria-selected="true"] {
-            background: var(--cat-mint);
-            color: #365846;
-            border-bottom-color: var(--cat-mint);
+            background: var(--cat-red);
+            color: #ffffff;
+            box-shadow: 0 7px 0 var(--cat-ink);
+        }
+
+        [data-testid="stTabs"] button p {
+            color: inherit;
+            font-size: 1rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin: 0;
+            padding: 0;
         }
 
         [data-testid="stFileUploaderDropzone"] {
-            background: rgba(255, 255, 255, 0.74);
-            border: 1px dashed #d7b8ca;
+            background: rgba(255, 250, 240, 0.86);
+            border: 3px dashed #d7a94b;
             border-radius: 8px;
         }
 
         [data-testid="stFileUploaderDropzone"] button,
         .stButton button {
-            background: var(--cat-peach);
-            border: 1px solid #efc3aa;
+            background: var(--cat-gold);
+            border: 3px solid var(--cat-border);
             border-radius: 8px;
-            color: #5a3f36;
-            font-weight: 650;
+            box-shadow: 0 5px 0 var(--cat-ink);
+            color: var(--cat-ink);
+            font-weight: 800;
         }
 
         [data-testid="stAlert"] {
-            background: rgba(223, 245, 232, 0.78);
-            border: 1px solid #badfcc;
+            background: rgba(255, 250, 240, 0.88);
+            border: 3px solid var(--cat-border);
+            border-left: 10px solid var(--cat-green);
             border-radius: 8px;
-            color: #355444;
+            color: var(--cat-ink);
         }
 
         [data-testid="stMetric"] {
-            background: #fffaf4;
-            border: 1px solid var(--cat-border);
+            background: var(--cat-paper);
+            border: 3px solid var(--cat-border);
             border-radius: 8px;
             padding: 0.85rem 1rem;
+            box-shadow: 6px 6px 0 rgba(23, 22, 38, 0.12);
         }
 
         [data-testid="stTable"] {
-            border: 1px solid var(--cat-border);
+            border: 3px solid var(--cat-border);
             border-radius: 8px;
             overflow: hidden;
         }
