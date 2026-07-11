@@ -237,6 +237,7 @@ def render_loaf_scorer():
                 {"Metric": "Circularity", "Value": metrics["circularity"]},
                 {"Metric": "Aspect ratio", "Value": metrics["aspect"]},
                 {"Metric": "Mask coverage", "Value": metrics["coverage"]},
+                {"Metric": "Body compactness", "Value": metrics["compactness"]},
             ]
         )
 
