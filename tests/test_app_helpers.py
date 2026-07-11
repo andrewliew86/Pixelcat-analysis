@@ -1,11 +1,16 @@
+from io import BytesIO
+
 import numpy as np
+from PIL import Image
 
 from src.pixelcat.clustering import cluster_pixels, sample_indices
+from src.pixelcat.image_processing import load_image_from_bytes
 from src.pixelcat.scores import (
     color_mismatch_score,
     distance_to_similarity,
     loaf_score,
     palette_distance,
+    rgb_to_lab,
 )
 from src.pixelcat.ui.components import palette_table_html
 
@@ -69,6 +74,21 @@ def test_palette_distance_is_symmetric():
     )
 
 
+def test_perceptual_distance_recognizes_equal_rgb_steps_are_not_equal():
+    dark_step = np.linalg.norm(rgb_to_lab((20, 20, 20)) - rgb_to_lab((50, 50, 50)))
+    light_step = np.linalg.norm(rgb_to_lab((205, 205, 205)) - rgb_to_lab((235, 235, 235)))
+    assert dark_step > light_step
+
+
+def test_jacket_visibility_is_directional():
+    cat = [{"rgb": (20, 20, 20), "percent": 100.0}]
+    matching_jacket = [
+        {"rgb": (20, 20, 20), "percent": 50.0},
+        {"rgb": (240, 240, 240), "percent": 50.0},
+    ]
+    assert color_mismatch_score(cat, matching_jacket) == 0
+
+
 def test_loaf_score_rewards_compact_oval_mask():
     rows, cols = np.ogrid[:80, :120]
     oval = ((rows - 40) / 25) ** 2 + ((cols - 60) / 42) ** 2 <= 1
@@ -78,6 +98,19 @@ def test_loaf_score_rewards_compact_oval_mask():
     assert 0 <= metrics["score"] <= 10
     assert metrics["score"] > 5
     assert metrics["aspect"] > 1
+    assert metrics["compactness"] > 0
+
+
+def test_background_removal_keeps_white_subject_connected_to_grey_backdrop():
+    pixels = np.full((20, 20, 4), (180, 180, 180, 255), dtype=np.uint8)
+    pixels[5:15, 5:15, :3] = 255
+    source = BytesIO()
+    Image.fromarray(pixels, "RGBA").save(source, format="PNG")
+
+    result = np.asarray(load_image_from_bytes(source.getvalue()))
+
+    assert result[0, 0, 3] == 0
+    assert result[10, 10, 3] == 255
 
 
 def test_sample_indices_caps_rows_reproducibly():
